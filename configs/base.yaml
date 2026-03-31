@@ -1,0 +1,135 @@
+seed: 3407
+
+model:
+  base_model_name: "Qwen/Qwen2.5-Coder-7B-Instruct"
+  load_in_4bit: true
+  max_seq_length: 2048
+  dtype: null
+  trust_remote_code: true
+  lora:
+    r: 32
+    alpha: 64
+    dropout: 0.0
+    bias: "none"
+    use_rslora: false
+    use_gradient_checkpointing: "unsloth"
+    target_modules:
+      - "q_proj"
+      - "k_proj"
+      - "v_proj"
+      - "o_proj"
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+
+dataset:
+  hf_name: "gretelai/synthetic_text_to_sql"
+  hf_split: "train"
+  sample_size: null
+  output_root: "data/processed/default"
+  include_explanation: false
+  allowed_task_types:
+    - "analytics and reporting"
+  allowed_leading_keywords:
+    - "SELECT"
+    - "WITH"
+  blocked_sql_keywords:
+    - "INSERT"
+    - "UPDATE"
+    - "DELETE"
+    - "DROP"
+    - "ALTER"
+    - "CREATE"
+    - "REPLACE"
+    - "TRUNCATE"
+    - "MERGE"
+    - "GRANT"
+    - "REVOKE"
+  blocked_dialect_regex:
+    - "\\bDATE_SUB\\s*\\("
+    - "\\bCURDATE\\s*\\("
+    - "\\bNOW\\s*\\("
+    - "\\bSYSDATE\\b"
+    - "\\bDATEDIFF\\s*\\("
+    - "\\bDATEADD\\s*\\("
+    - "\\bTIMESTAMPDIFF\\s*\\("
+    - "\\bINTERVAL\\b"
+    - "\\bILIKE\\b"
+    - "\\bQUALIFY\\b"
+    - "\\bUNNEST\\b"
+    - "\\bSTRING_AGG\\s*\\("
+    - "\\bLISTAGG\\s*\\("
+    - "\\bARRAY\\s*\\["
+    - "\\bSTRUCT\\s*\\("
+    - "\\bTOP\\s+[0-9]+"
+    - "\\bCROSS\\s+APPLY\\b"
+    - "\\bOUTER\\s+APPLY\\b"
+    - "\\bTRY_CAST\\s*\\("
+    - "\\bREGEXP\\b"
+    - "\\bEXTRACT\\s*\\("
+  min_prompt_chars: 12
+  min_sql_chars: 8
+  require_schema_context: true
+  keep_create_view: false
+  dedupe_on:
+    - "sql_prompt"
+    - "schema_ddl"
+    - "sql"
+  split:
+    train_ratio: 0.90
+    val_ratio: 0.05
+    test_ratio: 0.05
+
+prompt:
+  train_format: "direct_sql"
+  inference_format: "advanced_reasoning"
+  direct_sql_system_prompt: |
+    You are an expert Text-to-SQL assistant.
+    Convert each question into executable SQLite SQL using only the provided schema.
+    Return SQL only.
+    Do not return explanations, comments, markdown, or code fences.
+  advanced_reasoning_system_prompt: |
+    You are an expert SQLite Text-to-SQL assistant.
+    Work through schema selection, join paths, filters, aggregation, and ordering internally.
+    Return only the final executable SQLite SQL.
+    Do not include explanations, comments, markdown, or code fences.
+  user_template: |
+    Database schema:
+    {schema}
+
+    Question:
+    {question}
+
+    Return only SQLite SQL.
+
+training:
+  output_dir: "artifacts/qwen25_coder_text2sql"
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_grad_norm: 0.3
+  num_train_epochs: 1
+  max_steps: null
+  logging_steps: 5
+  eval_steps: 50
+  save_steps: 50
+  save_total_limit: 2
+  optim: "adamw_8bit"
+  gradient_checkpointing: true
+  group_by_length: true
+  dataloader_num_workers: 0
+  report_to: "none"
+
+export:
+  save_adapter: true
+  save_merged_16bit: false
+  save_gguf: false
+  gguf_quantization_method: "q4_k_m"
+
+runtime:
+  dataset_num_proc: 1
+

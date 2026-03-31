@@ -1,0 +1,37 @@
+seed: 3407
+
+dataset:
+  spider_root: "data/raw/spider1"
+  output_root: "data/processed/spider1_qwen25_7b"
+  include_explanation: false
+  split:
+    train_ratio: 0.95
+    val_ratio: 0.05
+    test_ratio: 0.00
+
+model:
+  base_model_name: "unsloth/Qwen2.5-Coder-7B-Instruct-bnb-4bit"
+  max_seq_length: 2048
+  lora:
+    r: 32
+    alpha: 64
+
+training:
+  output_dir: "artifacts/spider1_qwen25_7b"
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.05
+  num_train_epochs: 1
+  max_steps: null
+  logging_steps: 10
+  eval_steps: 100
+  save_steps: 100
+  save_total_limit: 2
+  report_to: "none"
+
+export:
+  save_adapter: true
+  save_merged_16bit: true
+  save_gguf: false

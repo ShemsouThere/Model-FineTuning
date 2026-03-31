@@ -1,0 +1,35 @@
+seed: 3407
+
+dataset:
+  sample_size: 5000
+  output_root: "data/processed/vast_5k"
+  split:
+    train_ratio: 0.90
+    val_ratio: 0.05
+    test_ratio: 0.05
+
+model:
+  max_seq_length: 2048
+  lora:
+    r: 32
+    alpha: 64
+
+training:
+  output_dir: "artifacts/vast_5k_qwen25_coder"
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.05
+  num_train_epochs: 1
+  max_steps: null
+  logging_steps: 5
+  eval_steps: 50
+  save_steps: 50
+  save_total_limit: 2
+  report_to: "none"
+
+export:
+  save_adapter: true
+  save_merged_16bit: true
+  save_gguf: false
