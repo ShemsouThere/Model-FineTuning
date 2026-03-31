@@ -63,7 +63,12 @@ def tokenize_example(example: dict[str, Any], tokenizer: Any, max_seq_length: in
     labels = list(input_ids)
 
     if prompt_len >= len(labels):
-        return {"skip_example": True}
+        return {
+            "input_ids": [],
+            "attention_mask": [],
+            "labels": [],
+            "skip_example": True,
+        }
 
     labels[:prompt_len] = [-100] * prompt_len
     return {
